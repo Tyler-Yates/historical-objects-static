@@ -28,19 +28,24 @@ def process_book_image(input_path: str):
 
     print(f"Processing {input_path}...")
 
-    hi_gallery = os.path.join(OUTPUT_DIRECTORY, os.path.basename(os.path.dirname(input_path)), "gallery", "hi")
-    low_gallery = os.path.join(OUTPUT_DIRECTORY, os.path.basename(os.path.dirname(input_path)), "gallery", "low")
     file_name = os.path.basename(input_path).split(".")[0]
-
     input_image = Image.open(input_path)
 
-    # Save the high quality image with no resizing
-    hi_image = resize_to_max_dimension(input_image, HI_MAX_DIMENSION)
-    hi_image.save(os.path.join(hi_gallery, f"{file_name}.avif"), "AVIF", quality=HIGH_QUALITY)
+    if file_name == "cover":
+        cover_image = resize_to_max_dimension(input_image, LOW_MAX_DIMENSION)
+        cover_folder = os.path.join(OUTPUT_DIRECTORY, os.path.basename(os.path.dirname(input_path)))
+        cover_image.save(os.path.join(cover_folder, f"{file_name}.avif"), "AVIF", quality=HIGH_QUALITY)
+    else:
+        hi_gallery = os.path.join(OUTPUT_DIRECTORY, os.path.basename(os.path.dirname(input_path)), "gallery", "hi")
+        low_gallery = os.path.join(OUTPUT_DIRECTORY, os.path.basename(os.path.dirname(input_path)), "gallery", "low")
 
-    # Resize the image for the low quality gallery
-    low_image = resize_to_max_dimension(input_image, LOW_MAX_DIMENSION)
-    low_image.save(os.path.join(low_gallery, f"{file_name}.avif"), "AVIF", quality=LOW_QUALITY)
+        # Save the high quality image with no resizing
+        hi_image = resize_to_max_dimension(input_image, HI_MAX_DIMENSION)
+        hi_image.save(os.path.join(hi_gallery, f"{file_name}.avif"), "AVIF", quality=HIGH_QUALITY)
+
+        # Resize the image for the low quality gallery
+        low_image = resize_to_max_dimension(input_image, LOW_MAX_DIMENSION)
+        low_image.save(os.path.join(low_gallery, f"{file_name}.avif"), "AVIF", quality=LOW_QUALITY)
 
     ALREADY_PROCESSED_UTIL.record_file_processed(input_path)
 
