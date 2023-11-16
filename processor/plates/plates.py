@@ -42,6 +42,8 @@ def process_plate_image(input_path: str):
     low_image = resize_to_max_dimension(input_image, LOW_MAX_DIMENSION)
     low_image.save(os.path.join(output_path, "plate.avif"), "AVIF", quality=LOW_QUALITY)
 
+    ALREADY_PROCESSED_UTIL.record_file_processed(input_path)
+
     print(f"Finished processing {input_path}")
 
 
