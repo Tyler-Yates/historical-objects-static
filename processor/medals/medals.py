@@ -46,6 +46,8 @@ def process_medal_image(input_path: str):
     low_image = resize_to_max_dimension(input_image, LOW_MAX_DIMENSION)
     low_image.save(os.path.join(low_gallery, f"{file_name}.avif"), "AVIF", quality=LOW_QUALITY)
 
+    ALREADY_PROCESSED_UTIL.record_file_processed(input_path)
+
     print(f"Finished processing {input_path}")
 
 
