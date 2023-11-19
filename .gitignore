@@ -1,3 +1,4 @@
 .idea/
 /input/
 already_processed.pickle
+__pycache__/
