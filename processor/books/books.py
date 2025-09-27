@@ -5,7 +5,6 @@ import os
 import pillow_avif
 from PIL import Image
 
-from processor.util import ALREADY_PROCESSED_UTIL
 from processor.util.constants import ROOT_PATH
 from processor.util.image_adjustments import resize_to_max_dimension
 
@@ -18,36 +17,53 @@ LOW_MAX_DIMENSION = 550
 
 
 def process_book_image(input_path: str):
-    if ALREADY_PROCESSED_UTIL.is_already_processed(input_path):
-        print(f"Skipping {input_path} as already processed")
-        return
-
     if not input_path.lower().endswith(".jpg"):
         print(f"ERROR: {input_path} is not a jpg file. Cannot process.")
         return
 
-    print(f"Processing {input_path}...")
-
     file_name = os.path.basename(input_path).split(".")[0]
-    input_image = Image.open(input_path)
+    book_name = os.path.basename(os.path.dirname(input_path))
 
     if file_name == "cover":
+        cover_folder = os.path.join(OUTPUT_DIRECTORY, book_name)
+        cover_output = os.path.join(cover_folder, f"{file_name}.avif")
+        
+        if os.path.exists(cover_output):
+            print(f"Skipping {input_path} - cover already exists")
+            return
+            
+        print(f"Processing {input_path}...")
+        os.makedirs(cover_folder, exist_ok=True)
+        
+        input_image = Image.open(input_path)
         cover_image = resize_to_max_dimension(input_image, LOW_MAX_DIMENSION)
-        cover_folder = os.path.join(OUTPUT_DIRECTORY, os.path.basename(os.path.dirname(input_path)))
-        cover_image.save(os.path.join(cover_folder, f"{file_name}.avif"), "AVIF", quality=HIGH_QUALITY)
+        cover_image.save(cover_output, "AVIF", quality=HIGH_QUALITY)
     else:
-        hi_gallery = os.path.join(OUTPUT_DIRECTORY, os.path.basename(os.path.dirname(input_path)), "gallery", "hi")
-        low_gallery = os.path.join(OUTPUT_DIRECTORY, os.path.basename(os.path.dirname(input_path)), "gallery", "low")
-
+        hi_gallery = os.path.join(OUTPUT_DIRECTORY, book_name, "gallery", "hi")
+        low_gallery = os.path.join(OUTPUT_DIRECTORY, book_name, "gallery", "low")
+        
+        hi_output = os.path.join(hi_gallery, f"{file_name}.avif")
+        low_output = os.path.join(low_gallery, f"{file_name}.avif")
+        
+        if os.path.exists(hi_output) and os.path.exists(low_output):
+            print(f"Skipping {input_path} - output files already exist")
+            return
+            
+        print(f"Processing {input_path}...")
+        os.makedirs(hi_gallery, exist_ok=True)
+        os.makedirs(low_gallery, exist_ok=True)
+        
+        input_image = Image.open(input_path)
+        
         # Save the high quality image with no resizing
         hi_image = resize_to_max_dimension(input_image, HI_MAX_DIMENSION)
-        hi_image.save(os.path.join(hi_gallery, f"{file_name}.avif"), "AVIF", quality=HIGH_QUALITY)
+        hi_image.save(hi_output, "AVIF", quality=HIGH_QUALITY)
 
         # Resize the image for the low quality gallery
         low_image = resize_to_max_dimension(input_image, LOW_MAX_DIMENSION)
-        low_image.save(os.path.join(low_gallery, f"{file_name}.avif"), "AVIF", quality=LOW_QUALITY)
+        low_image.save(low_output, "AVIF", quality=LOW_QUALITY)
 
-    ALREADY_PROCESSED_UTIL.record_file_processed(input_path)
+    print(f"Finished processing {input_path}")
 
     print(f"Finished processing {input_path}")
 
